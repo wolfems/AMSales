@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <div id="app">
+        <h2>{{ product }} are in stock.</h2>
+        <ul>
+            <li v-for="product in products">
+                {{product}}
+            </li>
+        </ul>
+    </div>
+
+<script src="https://unpkg.com/vue"></script>
+<script>
+    const app = new Vue({
+        el: '#app',
+        data: {
+            products: []
+        },
+        created() {
+            fetch('https://api.myjason.com/bins/346546')
+                .then(reesponse => response.json())
+                .then(json => {
+                    this.products = json.products
+                })
+        }
+    })
+</script>
+</body>
+</html>
