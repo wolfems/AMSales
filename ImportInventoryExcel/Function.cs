@@ -4,7 +4,6 @@ using Amazon.Lambda.Serialization.Json;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.DynamoDBv2;
-using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System;
@@ -88,6 +87,7 @@ namespace ImportInventoryExcel
                 {
                     responseStream.CopyTo(memStream);
                     ParseExcelStream(memStream);
+                    
                 //using (StreamReader reader = new StreamReader(responseStream))
                 //{
                 //    string title = response.Metadata["x-amz-meta-title"]; // Assume you have "title" as medata added to the object.
@@ -97,6 +97,23 @@ namespace ImportInventoryExcel
 
                 //    responseBody = reader.ReadToEnd(); // Now you process the response body.
                 }
+                //processed/test.txt
+                //S3FileInfo currentObject = new S3FileInfo(client, bucketName, keyName);
+                CopyObjectRequest cpreq = new CopyObjectRequest
+                {
+                    SourceBucket = bucketName,
+                    SourceKey = keyName,
+                    DestinationBucket = bucketName,
+                    DestinationKey = "processed/" + keyName.Replace(".xlsx", ".processed")
+                };
+                CopyObjectResponse cpresp = await client.CopyObjectAsync(cpreq);
+
+                var req2 = new DeleteObjectRequest
+                {
+                    BucketName = bucketName,
+                    Key = keyName
+                };
+                var resp2 = await client.DeleteObjectAsync(req2);
             }
             catch (AmazonS3Exception e)
             {
@@ -133,6 +150,14 @@ namespace ImportInventoryExcel
                             meat["SKU"] = tmpkey;
                             meat["Name"] = row.GetCell(row.FirstCellNum + 1).ToString();
                             meat["Quantity"] = row.GetCell(row.FirstCellNum + 3).ToString();
+                            float inv = 0;
+                            if(float.TryParse(row.GetCell(row.FirstCellNum + 3).ToString(), out inv))
+                            {
+                                if (inv > 0)
+                                    meat["InStock"] = "true";
+                                else
+                                    meat["InStock"] = "false";
+                            }
                             table.UpdateItemAsync(meat).Wait();
                         }
                         else
