@@ -23,10 +23,10 @@
             products: []
         },
         created() {
-            fetch('https://api.myjason.com/bins/346546')
-                .then(reesponse => response.json())
+            fetch('https://nkwt5nqvl1.execute-api.us-east-1.amazonaws.com/Prod')
+                .then(response => response.json())
                 .then(json => {
-                    this.products = json.products
+                    this.products = json
                 })
         }
     })
